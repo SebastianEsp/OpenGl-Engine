@@ -7,6 +7,8 @@
 
 using namespace std;
 
+string getCpuManufacturerAsHex(int reg);
+
 void sysInfo()
 {
 	char SysType[13];
@@ -62,24 +64,11 @@ void sysInfo()
 		MOV ECXReg, ECX
 	}
 
-	char hexBuffer[9];
-	_itoa_s(ECXReg, hexBuffer, 16);
+	string EBXHex = getCpuManufacturerAsHex(EBXReg);
+	string EDXHex = getCpuManufacturerAsHex(EDXReg);
+	string ECXHex = getCpuManufacturerAsHex(ECXReg);
 
-	string hexString = ("Hex: %x\n", hexBuffer);
-
-	string singleHex[9];
-
-	for (size_t i = 0; i < 9; i++)
-	{
-		stringstream ss;
-		ss << hexBuffer[i] << hexBuffer[i + 1];
-		string s = ss.str();
-		singleHex[i] = s;
-		i++;
-	}
-
-	cout << hex << "Hex: " << hexBuffer << endl;
-
+	cout << "EBX Reg: " << EBXHex << endl << "EDX Reg: " << EDXHex << endl << "ECX Reg: " << ECXHex << endl << endl;
 
 	_SYSTEM_INFO sysInfo;
 	//GetSystemInfo(&sysInfo);
@@ -88,9 +77,30 @@ void sysInfo()
 	string cpuArchitecture = to_string(sysInfo.wProcessorArchitecture);
 	string cpuLevel = to_string(sysInfo.wProcessorLevel);
 	string cpuRevision = to_string(sysInfo.wProcessorRevision);
-	cout << "Processor Architecture: " + cpuArchitecture + "\n";
-	cout << "Processor Level: " + cpuLevel + "\n";
-	cout << "Processor Revision: " + cpuRevision + "\n\n";
+	cout << "Processor Architecture: " << cpuArchitecture << endl;
+	cout << "Processor Level: " << cpuLevel << endl;
+	cout << "Processor Revision: " << cpuRevision << endl << endl;
+}
+
+string getCpuManufacturerAsHex(int reg)
+{
+	int i = 0;
+	char hexBuffer[9];
+	_itoa_s(reg, hexBuffer, 16);
+
+	string hexString = ("Hex: %x\n", hexBuffer);
+
+	stringstream ss;
+
+	for (; i < 8; i++)
+	{
+		ss << hexBuffer[i] << hexBuffer[i + 1];
+		i++;
+	}
+
+	string s = ss.str();
+
+	return s;
 }
 
 void renderScene(void)
@@ -107,7 +117,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("OpenGL Fist Windows");
+	glutCreateWindow("OpenGL");
 
 
 	sysInfo();
