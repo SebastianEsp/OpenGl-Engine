@@ -8,87 +8,63 @@
 using namespace std;
 
 string getCpuManufacturerAsHex(int reg);
+string hexToAscii(string hex);
 
 void sysInfo()
 {
-	char SysType[13];
-	string cpuId;
-
-	__asm
-	{
-		MOV EAX, 0 //Sets EAX to 0
-		CPUID
-
-		MOV EAX, EBX
-		MOV SysType[0], al
-		MOV SysType[1], ah
-		SHR EAX, 16
-		MOV SysType[2], al
-		MOV SysType[3], ah
-
-		MOV EAX, EDX
-		MOV SysType[4], al
-		MOV SysType[5], ah
-		SHR EAX, 16
-		MOV SysType[6], al
-		MOV SysType[7], ah
-
-		MOV EAX, ECX
-		MOV SysType[8], al
-		MOV SysType[9], ah
-		SHR EAX, 16
-		MOV SysType[10], al
-		MOV SysType[11], ah
-		MOV SysType[12], 00
-	}
-	cpuId.assign(SysType, 12);
-
-	cout << "CPU Manufacturer: " << cpuId << "\n\n";
-
+	//Holds the decimal value of the EBX, EDX and ECX registers.
 	 int EBXReg;
 	 int EDXReg;
 	 int ECXReg;
 
-	__asm
+	__asm // zero out EAX and call the CPUID instruction. Then move EBX, EDX and ECX into their respective variables.
 	{
 		XOR EAX, EAX
 		CPUID
+		
 		MOV EBXReg, EBX
-
-		XOR EAX, EAX
-		CPUID
 		MOV EDXReg, EDX
-
-		XOR EAX, EAX
-		CPUID
 		MOV ECXReg, ECX
 	}
+
+	string cpuModel;
+
+	_asm
+	{
+		MOV EAX, 1
+		CPUID
+	}
+
+	array<int, 4> cpui;
+	__cpuid(cpui.data(), 0);
+
+
+	cout << cpuModel << endl;
 
 	string EBXHex = getCpuManufacturerAsHex(EBXReg);
 	string EDXHex = getCpuManufacturerAsHex(EDXReg);
 	string ECXHex = getCpuManufacturerAsHex(ECXReg);
 
-	cout << "EBX Reg: " << EBXHex << endl << "EDX Reg: " << EDXHex << endl << "ECX Reg: " << ECXHex << endl << endl;
+	string EBXAscii = hexToAscii(EBXHex);
+	string EDXAscii = hexToAscii(EDXHex);
+	string ECXAscii = hexToAscii(ECXHex);
 
-	_SYSTEM_INFO sysInfo;
-	//GetSystemInfo(&sysInfo);
-	GetNativeSystemInfo(&sysInfo);
+	cout << "EBX Reg: " << EBXHex << " --> " << EBXAscii << endl;
+	cout << "EDX Reg: " << EDXHex << " --> " << EDXAscii << endl;
+	cout << "ECX Reg: " << ECXHex << " --> " << ECXAscii << endl << endl;
 
-	string cpuArchitecture = to_string(sysInfo.wProcessorArchitecture);
-	string cpuLevel = to_string(sysInfo.wProcessorLevel);
-	string cpuRevision = to_string(sysInfo.wProcessorRevision);
-	cout << "Processor Architecture: " << cpuArchitecture << endl;
-	cout << "Processor Level: " << cpuLevel << endl;
-	cout << "Processor Revision: " << cpuRevision << endl << endl;
+	string CpuManufacturer = ECXAscii + EDXAscii + EBXAscii;
+	reverse(CpuManufacturer.begin(), CpuManufacturer.end());
+
+	cout << "Cpu manufacturer: " << CpuManufacturer << endl << endl;
 }
 
+// Takes an integer and converts it to base 16, aka hexidecimal... then return it.
 string getCpuManufacturerAsHex(int reg)
 {
 	int i = 0;
 	char hexBuffer[9];
 	_itoa_s(reg, hexBuffer, 16);
-
-	string hexString = ("Hex: %x\n", hexBuffer);
 
 	stringstream ss;
 
@@ -101,6 +77,21 @@ string getCpuManufacturerAsHex(int reg)
 	string s = ss.str();
 
 	return s;
+}
+
+//Convert a hex value to the equivalent Ascii string
+string hexToAscii(string hex)
+{
+	int len = hex.length();
+	std::string newString;
+	for (int i = 0; i< len; i += 2)
+	{
+		string byte = hex.substr(i, 2);
+		char chr = (char)(int)strtol(byte.c_str(), NULL, 16);
+		newString.push_back(chr);
+	}
+
+	return newString;
 }
 
 void renderScene(void)
