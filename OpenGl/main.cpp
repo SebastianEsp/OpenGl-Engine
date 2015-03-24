@@ -27,20 +27,6 @@ void sysInfo()
 		MOV ECXReg, ECX
 	}
 
-	string cpuModel;
-
-	_asm
-	{
-		MOV EAX, 1
-		CPUID
-	}
-
-	array<int, 4> cpui;
-	__cpuid(cpui.data(), 0);
-
-
-	cout << cpuModel << endl;
-
 	string EBXHex = getCpuManufacturerAsHex(EBXReg);
 	string EDXHex = getCpuManufacturerAsHex(EDXReg);
 	string ECXHex = getCpuManufacturerAsHex(ECXReg);
